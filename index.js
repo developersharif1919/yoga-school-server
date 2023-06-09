@@ -58,15 +58,15 @@ async function run() {
     })
 
     // Verify Admin Middleware
-     const verifyAdmin = async(req, res, next) =>{
+    const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
-      const query = {email: email}
+      const query = { email: email }
       const user = await usersCollection.findOne(query);
-      if(user?.role !== 'admin'){
-        return res.status(403).send({error: true, message: 'forbidden message'})
+      if (user?.role !== 'admin') {
+        return res.status(403).send({ error: true, message: 'forbidden message' })
       }
       next();
-     }
+    }
 
     // Users Related API
     app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
@@ -86,11 +86,19 @@ async function run() {
     })
 
 
+    // GET Instructors
+    app.get('/instructors', async (req, res) => {
+      const query = { role: 'instructor' };
+      const result = await usersCollection.find(query).toArray();
+      console.log(query)
+      res.send(result);
+    });
+
     app.get('/users/admin/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
 
-      if(req.decoded.email !== email){
-        res.send({admin: false})
+      if (req.decoded.email !== email) {
+        res.send({ admin: false })
       }
 
       const query = { email: email }
