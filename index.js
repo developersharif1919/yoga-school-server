@@ -49,6 +49,7 @@ async function run() {
     await client.connect();
 
     const usersCollection = client.db("SummerCampDB").collection("Users");
+    const addClassCollection = client.db("SummerCampDB").collection("addClasses");
 
 
     app.post('/jwt', (req, res) => {
@@ -63,6 +64,17 @@ async function run() {
       const query = { email: email }
       const user = await usersCollection.findOne(query);
       if (user?.role !== 'admin') {
+        return res.status(403).send({ error: true, message: 'forbidden message' })
+      }
+      next();
+    }
+    
+    // Verify instructor Middleware
+    const verifyInstructor = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      if (user?.role !== 'instructor') {
         return res.status(403).send({ error: true, message: 'forbidden message' })
       }
       next();
@@ -94,6 +106,7 @@ async function run() {
       res.send(result);
     });
 
+
     app.get('/users/admin/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
 
@@ -106,6 +119,29 @@ async function run() {
       const result = { admin: user?.role === 'admin' }
       res.send(result);
     })
+
+
+    app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
+      const email = req.params.email;
+
+      if (req.decoded.email !== email) {
+        res.send({ instructor: false })
+      }
+
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      const result = { admin: user?.role === 'instructor' }
+      res.send(result);
+    })
+
+
+    // Add Class
+    app.post('/addClass', verifyJWT, verifyInstructor, async(req, res)=> {
+      const newClass = req.body;
+      const result = await addClassCollection.insertOne(newClass);
+      res.send(result);
+    })
+
 
     app.patch('/users/admin/:id', async (req, res) => {
       const id = req.params.id;
@@ -143,9 +179,6 @@ async function run() {
   }
 }
 run().catch(console.dir);
-
-
-
 
 
 
