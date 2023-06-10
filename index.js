@@ -87,7 +87,7 @@ async function run() {
       res.send(result);
     })
     // GET All Users
-    app.get('/allUsers',  async (req, res) => {
+    app.get('/allUsers', async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
     })
@@ -169,6 +169,15 @@ async function run() {
       res.send(classes);
     });
 
+    // GET Selected Classes
+    app.get('/selectedClass', async (req, res) => {
+      const email = req.query.email;
+      const query = { userEmail: email };
+      const selectedClasses = await selectedClassCollection.find(query).toArray();
+      res.json(selectedClasses);
+    });
+
+
     // Add Class
     app.post('/addClass', verifyJWT, verifyInstructor, async (req, res) => {
       const newClass = req.body;
@@ -178,7 +187,7 @@ async function run() {
     })
 
     // Selected Class
-    app.post('/selectedClass', async(req, res)=>{
+    app.post('/selectedClass', async (req, res) => {
       const selectedClass = req.body;
       const query = { selectedClassId: selectedClass.selectedClassId }
       const existingSelectedClass = await selectedClassCollection.findOne(query);
