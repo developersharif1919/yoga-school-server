@@ -148,7 +148,7 @@ async function run() {
     })
 
     // Approve Class
-    app.patch('/addClass/:id/approve', verifyJWT, verifyAdmin, async (req, res) => {
+    app.patch('/manageClasses/:id', verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
