@@ -50,6 +50,7 @@ async function run() {
 
     const usersCollection = client.db("SummerCampDB").collection("Users");
     const addClassCollection = client.db("SummerCampDB").collection("addClasses");
+    const selectedClassCollection = client.db("SummerCampDB").collection("selectedClass");
 
 
     app.post('/jwt', (req, res) => {
@@ -173,6 +174,18 @@ async function run() {
       const newClass = req.body;
       newClass.status = 'pending';
       const result = await addClassCollection.insertOne(newClass);
+      res.send(result);
+    })
+
+    // Selected Class
+    app.post('/selectedClass', async(req, res)=>{
+      const selectedClass = req.body;
+      const query = { selectedClassId: selectedClass.selectedClassId }
+      const existingSelectedClass = await selectedClassCollection.findOne(query);
+      if (existingSelectedClass) {
+        return res.send({ message: 'User Already Exists' })
+      }
+      const result = await selectedClassCollection.insertOne(selectedClass);
       res.send(result);
     })
 
