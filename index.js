@@ -68,7 +68,7 @@ async function run() {
       }
       next();
     }
-    
+
     // Verify instructor Middleware
     const verifyInstructor = async (req, res, next) => {
       const email = req.decoded.email;
@@ -134,13 +134,31 @@ async function run() {
       res.send(result);
     })
 
-
+    // GET Add Classes
+    app.get('/manageClasses', verifyJWT, verifyAdmin, async (req, res) => {
+      const classes = await addClassCollection.find().toArray();
+      res.send(classes);
+    });
     // Add Class
-    app.post('/addClass', verifyJWT, verifyInstructor, async(req, res)=> {
+    app.post('/addClass', verifyJWT, verifyInstructor, async (req, res) => {
       const newClass = req.body;
+      newClass.status = 'pending';
       const result = await addClassCollection.insertOne(newClass);
       res.send(result);
     })
+
+    // Approve Class
+    app.patch('/addClass/:id/approve', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: 'approved',
+        },
+      };
+      const result = await addClassCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
 
 
     app.patch('/users/admin/:id', async (req, res) => {
