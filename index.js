@@ -85,6 +85,19 @@ async function run() {
       const result = await usersCollection.find().toArray();
       res.send(result);
     })
+    // GET All Users
+    app.get('/allUsers',  async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    })
+
+    // Get current user
+    app.get('/currentUser/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      res.send(user);
+    });
 
     app.post('/users', async (req, res) => {
       const user = req.body;
@@ -143,7 +156,14 @@ async function run() {
     // GET Single Instructor Classes
     app.get('/classes/:email', verifyJWT, verifyInstructor, async (req, res) => {
       const email = req.params.email;
-      const query = { instructorEmail : email };
+      const query = { instructorEmail: email };
+      const classes = await addClassCollection.find(query).toArray();
+      res.send(classes);
+    });
+
+    // All Approved Classes
+    app.get('/approvedClasses', async (req, res) => {
+      const query = { status: 'approved' };
       const classes = await addClassCollection.find(query).toArray();
       res.send(classes);
     });
@@ -156,11 +176,11 @@ async function run() {
       res.send(result);
     })
 
-    // Approve Class
+    //Instructor Approve Class
     app.patch('/manageClasses/:id', verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
-      const { status} = req.body;
+      const { status } = req.body;
       const updateDoc = {
         $set: {
           status: status,
@@ -173,7 +193,7 @@ async function run() {
     app.patch('/feedback/:id', verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
-      const { feedback} = req.body;
+      const { feedback } = req.body;
       const updateDoc = {
         $set: {
           feedback: feedback,
