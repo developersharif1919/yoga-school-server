@@ -139,6 +139,15 @@ async function run() {
       const classes = await addClassCollection.find().toArray();
       res.send(classes);
     });
+
+    // GET Single Instructor Classes
+    app.get('/classes/:email', verifyJWT, verifyInstructor, async (req, res) => {
+      const email = req.params.email;
+      const query = { instructorEmail : email };
+      const classes = await addClassCollection.find(query).toArray();
+      res.send(classes);
+    });
+
     // Add Class
     app.post('/addClass', verifyJWT, verifyInstructor, async (req, res) => {
       const newClass = req.body;
