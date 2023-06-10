@@ -151,9 +151,23 @@ async function run() {
     app.patch('/manageClasses/:id', verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
+      const { status} = req.body;
       const updateDoc = {
         $set: {
-          status: 'approved',
+          status: status,
+        },
+      };
+      const result = await addClassCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    // Classes FeedBack
+    app.patch('/feedback/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const { feedback} = req.body;
+      const updateDoc = {
+        $set: {
+          feedback: feedback,
         },
       };
       const result = await addClassCollection.updateOne(filter, updateDoc);
