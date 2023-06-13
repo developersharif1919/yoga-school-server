@@ -52,7 +52,7 @@ async function run() {
     const usersCollection = client.db("SummerCampDB").collection("Users");
     const addClassCollection = client.db("SummerCampDB").collection("addClasses");
     const selectedClassCollection = client.db("SummerCampDB").collection("selectedClass");
-    const paymentClassCollection = client.db("SummerCampDB").collection("selectedClass");
+    const paymentClassCollection = client.db("SummerCampDB").collection("payments");
 
 
     app.post('/jwt', (req, res) => {
@@ -95,7 +95,7 @@ async function run() {
     })
 
     // Get current user
-    app.get('/currentUser/:email', async (req, res) => {
+    app.get('/currentUser/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const user = await usersCollection.findOne(query);
@@ -205,16 +205,37 @@ async function run() {
       const result = await selectedClassCollection.insertOne(selectedClass);
       res.send(result);
     })
+    // Payment Related Api
+    app.post('/payments', verifyJWT, async (req, res) => {
+      try {
+        const payment = req.body;
+        const insertResult = await paymentClassCollection.insertOne(payment);
 
-     // payment related api
-     app.post('/payments', verifyJWT, async (req, res) => {
-      const payment = req.body;
-      const insertResult = await paymentClassCollection.insertOne(payment);
-    
-      const classId = payment.classId; 
-      const deleteResult = await selectedClassCollection.deleteOne({ _id: new ObjectId(classId) });
-    
-      res.send({ insertResult, deleteResult });
+        const classId = payment.classId;
+        const deleteResult = await selectedClassCollection.deleteOne({ _id: new ObjectId(classId) });
+
+        // Update enrollment status and available seats
+        const updateClassResult = await addClassCollection.updateOne(
+          { _id: new ObjectId(classId) },
+          {
+            $inc: {
+              availableSeats: -1
+            }, $inc: { enrollmentStudent: 1 }
+          }
+        );
+
+        // Update totalEnrolmentStudent for instructor
+        const instructorEmail = payment.instructorEmail;
+        const updateUserResult = await usersCollection.updateOne(
+          { email: instructorEmail },
+          { $inc: { totalEnrolmentStudent: 1 } }
+        );
+
+        res.send({ insertResult, deleteResult, updateClassResult, updateUserResult });
+      } catch (error) {
+        console.error('Error in processing payment:', error);
+        res.status(500).send('Error in processing payment');
+      }
     });
 
     //Instructor Approve Class
