@@ -1,92 +1,114 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "./index.js",
-        "use": "@vercel/node"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/users",
-        "dest": "/index.js"
-      },
-      {
-        "src": "/allUsers",
-        "dest": "/index.js"
-      },
-      {
-        "src": "/currentUser/:email",
-        "dest": "/index.js"
-      },
-      {
-        "src": "/users",
-        "methods": ["POST"],
-        "dest": "/index.js"
-      },
-      {
-        "src": "/instructors",
-        "dest": "/index.js"
-      },
-      {
-        "src": "/users/admin/:email",
-        "dest": "/index.js"
-      },
-      {
-        "src": "/users/instructor/:email",
-        "dest": "/index.js"
-      },
-      {
-        "src": "/manageClasses",
-        "dest": "/index.js"
-      },
-      {
-        "src": "/classes/:email",
-        "dest": "/index.js"
-      },
-      {
-        "src": "/approvedClasses",
-        "dest": "/index.js"
-      },
-      {
-        "src": "/selectedClass",
-        "dest": "/index.js"
-      },
-      {
-        "src": "/addClass",
-        "methods": ["POST"],
-        "dest": "/index.js"
-      },
-      {
-        "src": "/selectedClass",
-        "methods": ["POST"],
-        "dest": "/index.js"
-      },
-      {
-        "src": "/manageClasses/:id",
-        "methods": ["PATCH"],
-        "dest": "/index.js"
-      },
-      {
-        "src": "/feedback/:id",
-        "methods": ["PATCH"],
-        "dest": "/index.js"
-      },
-      {
-        "src": "/users/admin/:id",
-        "methods": ["PATCH"],
-        "dest": "/index.js"
-      },
-      {
-        "src": "/users/instructor/:id",
-        "methods": ["PATCH"],
-        "dest": "/index.js"
-      },
-      {
-        "src": "/(.*)",
-        "status": 404,
-        "dest": "/index.js"
-      }
-    ]
-  }
-  
+  "version": 2,
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/jwt",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/users",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/allUsers",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/currentUser/:email",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/users",
+      "methods": ["POST"],
+      "dest": "/index.js"
+    },
+    {
+      "src": "/instructors",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/users/admin/:email",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/users/instructor/:email",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/manageClasses",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/classes/:email",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/approvedClasses",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/selectedClass",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/addClass",
+      "methods": ["POST"],
+      "dest": "/index.js"
+    },
+    {
+      "src": "/selectedClass",
+      "methods": ["POST"],
+      "dest": "/index.js"
+    },
+    {
+      "src": "/payments",
+      "methods": ["POST"],
+      "dest": "/index.js"
+    },
+    {
+      "src": "/paymentHistory/:email",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/manageClasses/:id",
+      "methods": ["PATCH"],
+      "dest": "/index.js"
+    },
+    {
+      "src": "/feedback/:id",
+      "methods": ["PATCH"],
+      "dest": "/index.js"
+    },
+    {
+      "src": "/users/admin/:id",
+      "methods": ["PATCH"],
+      "dest": "/index.js"
+    },
+    {
+      "src": "/users/instructor/:id",
+      "methods": ["PATCH"],
+      "dest": "/index.js"
+    },
+    {
+      "src": "/selectedClass/:id",
+      "methods": ["DELETE"],
+      "dest": "/index.js"
+    },
+    {
+      "src": "/create-payment-intent",
+      "methods": ["POST"],
+      "dest": "/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "status": 404,
+      "dest": "/index.js"
+    }
+  ]
+}

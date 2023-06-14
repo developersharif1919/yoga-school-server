@@ -250,8 +250,7 @@ async function run() {
           { email: payment.instructorEmail },
           { $inc: { totalEnrolmentStudent: 1 } }
         );
-    
-        console.log('sldjflsdjfl',updateClassResult)
+        
         res.send({ insertResult, deleteResult, updateClassResult, updateUserResult });
       } catch (error) {
         console.error('Error in processing payment:', error);
