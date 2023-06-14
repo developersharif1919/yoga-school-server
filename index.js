@@ -196,6 +196,16 @@ async function run() {
   
       res.send(popularClasses);
     });
+// Popular Instructors
+    app.get('/popularInstructors', async (req, res) => {
+      const minEnrollment = 3; 
+    
+      const query = { totalEnrolmentStudent: { $gte: minEnrollment } };
+      const popularInstructors = await usersCollection.find(query).toArray();
+
+      res.send(popularInstructors);
+    });
+
     // Add Class
     app.post('/addClass', verifyJWT, verifyInstructor, async (req, res) => {
       const newClass = req.body;
