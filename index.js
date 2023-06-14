@@ -188,7 +188,14 @@ async function run() {
       const selectedClass = await selectedClassCollection.findOne(filter);
       res.send(selectedClass)
     });
-
+    // PopularClasses
+    app.get('/popularClasses', async (req, res) => {
+      const minEnrollment = 1; 
+      const query = { enrollmentStudent: { $gte: minEnrollment } };
+      const popularClasses = await addClassCollection.find(query).toArray();
+  
+      res.send(popularClasses);
+    });
     // Add Class
     app.post('/addClass', verifyJWT, verifyInstructor, async (req, res) => {
       const newClass = req.body;
