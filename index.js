@@ -190,20 +190,43 @@ async function run() {
     });
     // PopularClasses
     app.get('/popularClasses', async (req, res) => {
-      const minEnrollment = 1; 
+      const minEnrollment = 1;
       const query = { enrollmentStudent: { $gte: minEnrollment } };
       const popularClasses = await addClassCollection.find(query).toArray();
-  
+
       res.send(popularClasses);
     });
-// Popular Instructors
+    // Popular Instructors
     app.get('/popularInstructors', async (req, res) => {
-      const minEnrollment = 3; 
-    
+      const minEnrollment = 3;
+
       const query = { totalEnrolmentStudent: { $gte: minEnrollment } };
       const popularInstructors = await usersCollection.find(query).toArray();
 
       res.send(popularInstructors);
+    });
+
+    // GET Admin stats
+    app.get('/admin-stats', verifyJWT, verifyAdmin, async (req, res) => {
+     
+        const usersCount = await usersCollection.estimatedDocumentCount();
+        const instructorsCount = await usersCollection.countDocuments({ role: 'instructor' });
+        const addClassesCount = await addClassCollection.estimatedDocumentCount();
+        const selectedClassesCount = await selectedClassCollection.estimatedDocumentCount();
+        const paymentCount = await paymentClassCollection.estimatedDocumentCount();
+        const approvedClassesCount = await addClassCollection.countDocuments({ status: 'approved' });
+
+        const adminStats = {
+          usersCount,
+          instructorsCount,
+          addClassesCount,
+          selectedClassesCount,
+          approvedClassesCount,
+          paymentCount
+        };
+
+        res.send(adminStats);
+      
     });
 
     // Add Class
@@ -236,19 +259,17 @@ async function run() {
       try {
         const payment = req.body;
         const existingPayment = await paymentClassCollection.findOne({ classId: payment.classId });
-    
+
         if (existingPayment) {
           return res.send({ message: 'You have already made a payment for this class' });
         }
-    
+
         const insertResult = await paymentClassCollection.insertOne(payment);
-    
+
         const classId = payment.classId;
         const selectedClassId = payment.selectedClassId;
-    
-        console.log(classId);
         const deleteResult = await selectedClassCollection.deleteOne({ _id: new ObjectId(classId) });
-    
+
         // Update enrollment status and available seats
         const updateClassResult = await addClassCollection.updateOne(
           {
@@ -261,13 +282,13 @@ async function run() {
             }
           }
         );
-    
+
         // Update totalEnrolmentStudent for instructor
         const updateUserResult = await usersCollection.updateOne(
           { email: payment.instructorEmail },
           { $inc: { totalEnrolmentStudent: 1 } }
         );
-        
+
         res.send({ insertResult, deleteResult, updateClassResult, updateUserResult });
       } catch (error) {
         console.error('Error in processing payment:', error);
@@ -346,6 +367,23 @@ async function run() {
       const result = await selectedClassCollection.deleteOne(filter);
       res.send(result);
     });
+
+    // DELETE User
+    app.delete('/users/:id', verifyJWT, async (req, res) => {
+      const userId = req.params.id;
+    
+      // Check if the user is the main admin
+      const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+      if (user && user.email === 'developersharif@gmail.com') {
+        return res.send({ message: 'This Is Main Admin. You Can Not Delete This User' });
+      }
+    
+      const result = await usersCollection.deleteOne({ _id: new ObjectId(userId) });
+      res.send(result);
+    });
+
+
+
 
     // create payment intent
     app.post('/create-payment-intent', verifyJWT, async (req, res) => {
