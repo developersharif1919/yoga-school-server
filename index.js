@@ -258,6 +258,27 @@ async function run() {
       res.send(instructorStats);
     });
 
+// GET Student Stats
+    app.get('/student-stats/:email', verifyJWT, async (req, res) => {
+      const email = req.params.email;
+    
+ 
+      const selectedClassesCount = await selectedClassCollection.countDocuments({
+        userEmail: email
+      });
+      const paymentClassesCount = await paymentClassCollection.countDocuments({
+        email: email,
+        status: 'Payment Complete'
+      });
+  
+      const studentsStats = {
+       selectedClassesCount,
+       paymentClassesCount
+      };
+    
+      res.send(studentsStats);
+    });
+
 
 
 
