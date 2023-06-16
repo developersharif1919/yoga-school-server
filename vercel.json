@@ -32,6 +32,7 @@
     { "src": "/admin-stats", "dest": "/index.js" },
     { "src": "/instructor-stats/:email", "methods": ["PATCH"], "dest": "/index.js" },
     { "src": "/student-stats/:email", "methods": ["PATCH"], "dest": "/index.js" },
+    { "src": "/users/students/:email", "dest": "/index.js" },
     { "src": "/(.*)", "status": 404, "dest": "/index.js" }
   ]
 }

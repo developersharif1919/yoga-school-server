@@ -1,9 +1,9 @@
-const express = require('express')
+const express = require('express');
 const app = express();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-require('dotenv').config()
-const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
+require('dotenv').config();
+const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 
@@ -61,6 +61,17 @@ async function run() {
       res.send({ token })
     })
 
+    // Verify Student Middleware -------> New Code
+    const verifyStudent = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      if (user?.role !== 'student') {
+        return res.status(403).send({ error: true, message: 'forbidden message' })
+      }
+      next();
+    }
+
     // Verify Admin Middleware
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
@@ -82,6 +93,7 @@ async function run() {
       }
       next();
     }
+
 
     // Users Related API
     app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
@@ -149,9 +161,25 @@ async function run() {
 
       const query = { email: email }
       const user = await usersCollection.findOne(query);
-      const result = { admin: user?.role === 'instructor' }
+      const result = { instructor: user?.role === 'instructor' }
       res.send(result);
     })
+
+
+    
+    app.get('/users/students/:email', verifyJWT, async (req, res) => {
+      const email = req.params.email;
+
+      if (req.decoded.email !== email) {
+        res.send({ student: false })
+      }
+
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      const result = { student: user?.role === 'student' }
+      res.send(result);
+    })
+
 
     // GET Add Classes
     app.get('/manageClasses', verifyJWT, verifyAdmin, async (req, res) => {
@@ -188,6 +216,7 @@ async function run() {
       const selectedClass = await selectedClassCollection.findOne(filter);
       res.send(selectedClass)
     });
+
     // PopularClasses
     app.get('/popularClasses', async (req, res) => {
       const minEnrollment = 1;
@@ -208,32 +237,32 @@ async function run() {
 
     // GET Admin stats
     app.get('/admin-stats', verifyJWT, verifyAdmin, async (req, res) => {
-     
-        const usersCount = await usersCollection.estimatedDocumentCount();
-        const instructorsCount = await usersCollection.countDocuments({ role: 'instructor' });
-        const addClassesCount = await addClassCollection.estimatedDocumentCount();
-        const selectedClassesCount = await selectedClassCollection.estimatedDocumentCount();
-        const paymentCount = await paymentClassCollection.estimatedDocumentCount();
-        const approvedClassesCount = await addClassCollection.countDocuments({ status: 'approved' });
 
-        const adminStats = {
-          usersCount,
-          instructorsCount,
-          addClassesCount,
-          selectedClassesCount,
-          approvedClassesCount,
-          paymentCount
-        };
+      const usersCount = await usersCollection.estimatedDocumentCount();
+      const instructorsCount = await usersCollection.countDocuments({ role: 'instructor' });
+      const addClassesCount = await addClassCollection.estimatedDocumentCount();
+      const selectedClassesCount = await selectedClassCollection.estimatedDocumentCount();
+      const paymentCount = await paymentClassCollection.estimatedDocumentCount();
+      const approvedClassesCount = await addClassCollection.countDocuments({ status: 'approved' });
 
-        res.send(adminStats);
-      
+      const adminStats = {
+        usersCount,
+        instructorsCount,
+        addClassesCount,
+        selectedClassesCount,
+        approvedClassesCount,
+        paymentCount
+      };
+
+      res.send(adminStats);
+
     });
     // GET Instructors
 
     app.get('/instructor-stats/:email', verifyJWT, verifyInstructor, async (req, res) => {
       const email = req.params.email;
-    
-    // Get Instructor approved class
+
+      // Get Instructor approved class
       const instructorAddedClassesCount = await addClassCollection.countDocuments({ instructorEmail: email });
       const approvedClassesCount = await addClassCollection.countDocuments({
         instructorEmail: email,
@@ -247,22 +276,22 @@ async function run() {
         instructorEmail: email,
         status: 'denied'
       });
-  
+
       const instructorStats = {
         instructorAddedClassesCount,
         approvedClassesCount,
         pendingClassesCount,
         deniedClassesCount
       };
-    
+
       res.send(instructorStats);
     });
 
-// GET Student Stats
-    app.get('/student-stats/:email', verifyJWT, async (req, res) => {
+    // GET Student Stats
+    app.get('/student-stats/:email', verifyJWT, verifyStudent, async (req, res) => {
       const email = req.params.email;
-    
- 
+
+
       const selectedClassesCount = await selectedClassCollection.countDocuments({
         userEmail: email
       });
@@ -270,12 +299,12 @@ async function run() {
         email: email,
         status: 'Payment Complete'
       });
-  
+
       const studentsStats = {
-       selectedClassesCount,
-       paymentClassesCount
+        selectedClassesCount,
+        paymentClassesCount
       };
-    
+
       res.send(studentsStats);
     });
 
@@ -424,13 +453,13 @@ async function run() {
     // DELETE User
     app.delete('/users/:id', verifyJWT, async (req, res) => {
       const userId = req.params.id;
-    
+
       // Check if the user is the main admin
       const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
       if (user && user.email === 'developersharif@gmail.com') {
         return res.send({ message: 'This Is Main Admin. You Can Not Delete This User' });
       }
-    
+
       const result = await usersCollection.deleteOne({ _id: new ObjectId(userId) });
       res.send(result);
     });
@@ -463,8 +492,6 @@ async function run() {
   }
 }
 run().catch(console.dir);
-
-
 
 
 
