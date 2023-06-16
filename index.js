@@ -228,6 +228,38 @@ async function run() {
         res.send(adminStats);
       
     });
+    // GET Instructors
+
+    app.get('/instructor-stats/:email', verifyJWT, verifyInstructor, async (req, res) => {
+      const email = req.params.email;
+    
+    // Get Instructor approved class
+      const instructorAddedClassesCount = await addClassCollection.countDocuments({ instructorEmail: email });
+      const approvedClassesCount = await addClassCollection.countDocuments({
+        instructorEmail: email,
+        status: 'approved'
+      });
+      const pendingClassesCount = await addClassCollection.countDocuments({
+        instructorEmail: email,
+        status: 'pending'
+      });
+      const deniedClassesCount = await addClassCollection.countDocuments({
+        instructorEmail: email,
+        status: 'denied'
+      });
+  
+      const instructorStats = {
+        instructorAddedClassesCount,
+        approvedClassesCount,
+        pendingClassesCount,
+        deniedClassesCount
+      };
+    
+      res.send(instructorStats);
+    });
+
+
+
 
     // Add Class
     app.post('/addClass', verifyJWT, verifyInstructor, async (req, res) => {
