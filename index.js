@@ -219,7 +219,7 @@ async function run() {
 
     // PopularClasses
     app.get('/popularClasses', async (req, res) => {
-      const minEnrollment = 1;
+      const minEnrollment = 3;
       const query = { enrollmentStudent: { $gte: minEnrollment } };
       const popularClasses = await addClassCollection.find(query).toArray();
 
